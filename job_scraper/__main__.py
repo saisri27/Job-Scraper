@@ -8,14 +8,14 @@ import sys
 
 from .config import load
 from .emailer import send_job_digest
+from .scrapers.apple import AppleScraper
 from .scrapers.base import Job
-from .scrapers.cisco import CiscoScraper
-from .scrapers.ibm import IBMScraper
+from .scrapers.google import GoogleScraper
 from .seen_store import SeenStore
 
 log = logging.getLogger("job_scraper")
 
-SCRAPERS = [CiscoScraper(), IBMScraper()]
+SCRAPERS = [AppleScraper(), GoogleScraper()]
 
 
 async def _scrape_one(scraper) -> list[Job]:

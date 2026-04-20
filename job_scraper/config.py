@@ -15,11 +15,12 @@ class EmailConfig:
 
 
 def load() -> EmailConfig:
-    host = os.environ.get("EMAIL_HOST", "")
-    port = int(os.environ.get("EMAIL_PORT", "587"))
-    user = os.environ.get("EMAIL_USER", "")
+    host = os.environ.get("EMAIL_HOST", "").strip()
+    port_raw = (os.environ.get("EMAIL_PORT") or "").strip() or "587"
+    port = int(port_raw)
+    user = os.environ.get("EMAIL_USER", "").strip()
     password = os.environ.get("EMAIL_PASS", "")
-    to = os.environ.get("EMAIL_TO", user)
+    to = (os.environ.get("EMAIL_TO") or user).strip()
     return EmailConfig(host=host, port=port, user=user, password=password, to=to)
 
 

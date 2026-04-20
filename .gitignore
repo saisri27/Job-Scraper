@@ -1,5 +1,6 @@
 .state/
 .cache/
+debug_screenshots/
 __pycache__/
 *.pyc
 .venv/

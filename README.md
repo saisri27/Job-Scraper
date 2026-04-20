@@ -1,34 +1,47 @@
 # Job Scraper (Playwright)
 
-This project runs a GitHub Actions workflow that:
+Scrapes **Apple** and **Google** careers pages for `Data Scientist` and `AI Engineer` roles, runs 4×/day on GitHub Actions, and emails you when new postings appear.
 
-- Scrapes Cisco and IBM career pages
-- Looks for `Data Scientist` and `AI Engineer` postings
-- Runs 4 times per day
-- Sends an email when newly discovered jobs appear
+## Package layout
+
+```
+job_scraper/
+├── __main__.py        # Entry point
+├── config.py          # Email config loaded from env / GitHub Secrets
+├── emailer.py         # SMTP email digest (HTML + plain text)
+├── seen_store.py      # Dedup persistence (.state/seen_jobs.json, 30-day TTL)
+└── scrapers/
+    ├── base.py        # Job dataclass + BaseScraper ABC
+    ├── apple.py       # Matches /details/{id} URL pattern
+    └── google.py      # Matches /jobs/results/{id} URL pattern
+```
 
 ## GitHub Secrets to add
 
-In your GitHub repo, go to **Settings -> Secrets and variables -> Actions** and add:
+In your GitHub repo → **Settings → Secrets and variables → Actions**:
 
-- `EMAIL_HOST` (example: `smtp.gmail.com`)
-- `EMAIL_PORT` (example: `587`)
+- `EMAIL_HOST` (e.g. `smtp.gmail.com`)
+- `EMAIL_PORT` (e.g. `587`)
 - `EMAIL_USER` (your sender email)
-- `EMAIL_PASS` (email app password / passcode)
-- `EMAIL_TO` (your destination email; can be same as `EMAIL_USER`)
+- `EMAIL_PASS` (email **app password**, not your regular password)
+- `EMAIL_TO` (recipient email; can be same as `EMAIL_USER`)
 
-## Workflow details
+## Running
 
-- Workflow file: `.github/workflows/job-scraper.yml`
-- Schedule: every 6 hours via cron (`0 */6 * * *`)
-- Manual trigger: supported via `workflow_dispatch`
+- **Scheduled**: every 6 hours via cron (`0 */6 * * *`)
+- **Manual**: Actions tab → *Job Scraper* → *Run workflow*
+  - Set **reset_store** to `true` on the first real run to force an email with everything found.
 
-## Local run (optional)
+## Local run
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 playwright install chromium
-python scripts/scrape_jobs.py
+python -m job_scraper --verbose --reset-store --dry-run
 ```
+
+- `--dry-run` — log results, don't send email or persist state
+- `--reset-store` — treat every job as new (useful for first run / testing)
+- `--verbose` — debug logging

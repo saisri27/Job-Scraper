@@ -50,9 +50,19 @@ jobs:
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          DEBUG_SCREENSHOTS: "true"
         run: |
           RESET_FLAG=""
           if [ "${{ github.event.inputs.reset_store }}" = "true" ]; then
             RESET_FLAG="--reset-store"
           fi
           python -m job_scraper --verbose $RESET_FLAG
+
+      - name: Upload debug screenshots (on zero-result runs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshots
+          path: debug_screenshots/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,4 +1,4 @@
-from .cisco import CiscoScraper
-from .ibm import IBMScraper
+from .apple import AppleScraper
+from .google import GoogleScraper
 
-__all__ = ["CiscoScraper", "IBMScraper"]
+__all__ = ["AppleScraper", "GoogleScraper"]
