@@ -4,6 +4,13 @@ on:
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
+    inputs:
+      reset_store:
+        description: "Treat every found job as new (forces email)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
 
 jobs:
   scrape-and-notify:
@@ -20,19 +27,21 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Restore previous seen jobs state
+      - name: Restore seen-jobs state
         uses: actions/cache@v4.2.3
         with:
-          path: .cache
+          path: .state
           key: seen-jobs-${{ github.run_id }}
           restore-keys: |
             seen-jobs-
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          playwright install --with-deps chromium
+
+      - name: Install Playwright browser
+        run: playwright install --with-deps chromium
 
       - name: Run scraper
         env:
@@ -41,4 +50,9 @@ jobs:
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
-        run: python scripts/scrape_jobs.py
+        run: |
+          RESET_FLAG=""
+          if [ "${{ github.event.inputs.reset_store }}" = "true" ]; then
+            RESET_FLAG="--reset-store"
+          fi
+          python -m job_scraper --verbose $RESET_FLAG
